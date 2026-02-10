@@ -189,10 +189,14 @@ MAX_HISTORY = 100
 posts_count = 0
 
 
-async def generate_quote_with_ai() -> dict | None:
+async def generate_quote_with_ai(retry_count: int = 0) -> dict | None:
     """Генерация реальной цитаты из аниме через AI"""
     if not ai_client:
         logger.error("❌ GROQ_API_KEY не указан!")
+        return None
+    
+    if retry_count >= 3:
+        logger.error("❌ Превышено количество попыток генерации")
         return None
     
     try:
@@ -208,7 +212,7 @@ async def generate_quote_with_ai() -> dict | None:
 - Цитата должна быть глубокой, философской, мотивирующей или запоминающейся
 - Если не знаешь реальную цитату из этого аниме - выбери другое известное аниме
 
-Ответь СТРОГО в JSON формате:
+Ответь ТОЛЬКО валидным JSON без дополнительного текста:
 {{
     "anime": "Название аниме",
     "character": "Имя персонажа",
@@ -218,7 +222,7 @@ async def generate_quote_with_ai() -> dict | None:
     "image_keywords": "ключевые слова для арта"
 }}
 
-Только JSON, без пояснений!"""
+ВАЖНО: JSON должен быть валидным! Без лишних скобок, запятых в конце, только чистый JSON!"""
 
         response = await ai_client.chat.completions.create(
             model="llama-3.3-70b-versatile",
@@ -238,13 +242,28 @@ async def generate_quote_with_ai() -> dict | None:
         elif "```" in result_text:
             result_text = result_text.split("```")[1].split("```")[0]
         
+        # Очищаем JSON от лишних символов
+        result_text = result_text.strip()
+        # Убираем лишние скобки в конце
+        while result_text.endswith(')') or result_text.endswith(','):
+            result_text = result_text.rstrip('),')
+        # Находим первую { и последнюю }
+        start = result_text.find('{')
+        end = result_text.rfind('}')
+        if start != -1 and end != -1 and end > start:
+            result_text = result_text[start:end+1]
+        
+        # Пробуем исправить частые ошибки
+        result_text = result_text.replace('",)', '")')  # Убираем лишние запятые перед скобками
+        result_text = result_text.replace('",\n)', '"\n}')  # Исправляем закрывающие скобки
+        
         quote_data = json.loads(result_text)
         
         # Проверяем что цитата не повторяется
         quote_key = f"{quote_data['anime']}:{quote_data['quote'][:50]}"
         if quote_key in used_quotes_history:
             logger.info("🔄 Цитата уже была, генерируем новую...")
-            return await generate_quote_with_ai()
+            return await generate_quote_with_ai(retry_count=retry_count)
         
         # Добавляем в историю
         used_quotes_history.append(quote_key)
@@ -257,7 +276,34 @@ async def generate_quote_with_ai() -> dict | None:
     except json.JSONDecodeError as e:
         logger.error(f"❌ Ошибка парсинга JSON: {e}")
         logger.error(f"   Ответ: {result_text[:200]}")
-        return None
+        # Пробуем исправить и распарсить ещё раз
+        try:
+            # Пробуем найти JSON вручную
+            import re
+            json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', result_text, re.DOTALL)
+            if json_match:
+                fixed_json = json_match.group(0)
+                quote_data = json.loads(fixed_json)
+                logger.info("✅ JSON исправлен и распарсен!")
+                
+                # Проверяем что цитата не повторяется
+                quote_key = f"{quote_data['anime']}:{quote_data['quote'][:50]}"
+                if quote_key in used_quotes_history:
+                    logger.info("🔄 Цитата уже была, генерируем новую...")
+                    return await generate_quote_with_ai()
+                
+                used_quotes_history.append(quote_key)
+                if len(used_quotes_history) > MAX_HISTORY:
+                    used_quotes_history.pop(0)
+                
+                logger.info(f"✅ Сгенерирована цитата: {quote_data['anime']} - {quote_data['character']}")
+                return quote_data
+        except:
+            pass
+        
+        # Если не получилось исправить - пробуем ещё раз
+        logger.warning(f"⚠️ Попытка {retry_count + 1}/3: повторная генерация...")
+        return await generate_quote_with_ai(retry_count=retry_count + 1)
     except Exception as e:
         logger.error(f"❌ Ошибка генерации цитаты: {e}")
         return None
