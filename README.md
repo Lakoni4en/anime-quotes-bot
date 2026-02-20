@@ -1,1 +1,37 @@
-IyBBbmltZSBRdW90ZXMgQm90CgojIyDwn5OLINCe0L/QuNGB0LDQvdC40LUKCioqQW5pbWUgUXVvdGVzIEJvdCoqIC0g0Y3RgtC+INCx0L7Rgi4KCtCf0YDQvtC10LrRgiDQsNCy0YLQvtC80LDRgtC40LfQuNGA0YPQtdGCINC30LDQtNCw0YfQuC4KCtCd0LDQv9C40YHQsNC9INC90LAg0Y/Qt9GL0LrQtSDQv9GA0L7Qs9GA0LDQvNC80LjRgNC+0LLQsNC90LjRjyAqKlB5dGhvbioqLgoKIyMg8J+boCDQotC10YXQvdC+0LvQvtCz0LjQuAoKIVtQeXRob25dKGh0dHBzOi8vaW1nLnNoaWVsZHMuaW8vYmFkZ2UvLVB5dGhvbi1ibHVlP3N0eWxlPWZsYXQtc3F1YXJlKQoKCiMjIOKcqCDQktC+0LfQvNC+0LbQvdC+0YHRgtC4CgoKLSDQmNC90YLQtdGA0LDQutGC0LjQstC90YvQtSDQutC+0LzQsNC90LTRiwoKCiMjIPCfk6Yg0JfQsNCy0LjRgdC40LzQvtGB0YLQuAoKCi0gYWlvZ3JhbQotIGFpb2h0dHAKLSBhaW9zcWxpdGUKLSBvcGVuYWkKLSBweXRob24tZG90ZW52CgoKIyMg8J+agCDQo9GB0YLQsNC90L7QstC60LAg0Lgg0LfQsNC/0YPRgdC6CgpgYGBiYXNoCnBpcCBpbnN0YWxsIC1yIHJlcXVpcmVtZW50cy50eHQKcHl0aG9uIG1haW4ucHkKYGBgCg==
+# Anime Quotes Bot
+
+## 📋 Описание
+
+**Anime Quotes Bot** - это бот.
+
+Проект автоматизирует задачи.
+
+Написан на языке программирования **Python**.
+
+## 🛠 Технологии
+
+![Python](https://img.shields.io/badge/-Python-blue?style=flat-square)
+
+
+## ✨ Возможности
+
+
+- Интерактивные команды
+
+
+## 📦 Зависимости
+
+
+- aiogram
+- aiohttp
+- aiosqlite
+- openai
+- python-dotenv
+
+
+## 🚀 Установка и запуск
+
+```bash
+pip install -r requirements.txt
+python main.py
+```
